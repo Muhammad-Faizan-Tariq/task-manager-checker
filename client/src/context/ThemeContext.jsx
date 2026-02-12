@@ -17,16 +17,25 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     // Update document class and localStorage
     const root = document.documentElement;
+    console.log('[ThemeContext] Updating theme to:', theme);
     if (theme === 'dark') {
       root.classList.add('dark');
+      console.log('[ThemeContext] Added dark class to html element');
     } else {
       root.classList.remove('dark');
+      console.log('[ThemeContext] Removed dark class from html element');
     }
     localStorage.setItem('theme', theme);
+    console.log('[ThemeContext] Saved to localStorage:', theme);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    console.log('[ThemeContext] toggleTheme called, current theme:', theme);
+    setTheme(prev => {
+      const newTheme = prev === 'dark' ? 'light' : 'dark';
+      console.log('[ThemeContext] Switching from', prev, 'to', newTheme);
+      return newTheme;
+    });
   };
 
   return (

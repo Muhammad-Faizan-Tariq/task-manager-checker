@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const logger = require('./logger');
 
 const connectDB = async () => {
   try {
@@ -10,12 +11,25 @@ const connectDB = async () => {
     };
 
     await mongoose.connect(process.env.MONGODB_URI, options);
-    console.log('MongoDB connected successfully');
+    logger.info('MongoDB connected successfully');
   } catch (error) {
-    console.error('MongoDB connection error:', error.message);
+    logger.error('MongoDB connection error:', { error: error.message, stack: error.stack });
     // In serverless, don't exit process - just throw error
     throw error;
   }
 };
+
+// Connection event listeners
+mongoose.connection.on('connected', () => {
+  logger.info('Mongoose connected to MongoDB');
+});
+
+mongoose.connection.on('error', (err) => {
+  logger.error('Mongoose connection error:', { error: err.message });
+});
+
+mongoose.connection.on('disconnected', () => {
+  logger.warn('Mongoose disconnected from MongoDB');
+});
 
 module.exports = connectDB;

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useTasks } from '../context/TaskContext';
+import useSound from 'use-sound';
+import { triggerTaskAddedConfetti } from '../utils/confetti';
 
-const TaskForm = () => {
+const TaskForm = ({ onSuccess }) => {
   const { createTask } = useTasks();
   const [formData, setFormData] = useState({
     title: '',
@@ -11,6 +13,14 @@ const TaskForm = () => {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Sound effect for task addition
+  // Note: You'll need to add a sound file at /sounds/task-added.mp3
+  const [playSound] = useSound('/sounds/task-added.mp3', {
+    volume: 0.5,
+    // Silently fail if sound file doesn't exist
+    onError: () => console.log('Sound file not found - continuing without sound')
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,6 +65,14 @@ const TaskForm = () => {
     setIsSubmitting(false);
 
     if (result.success) {
+      // Play sound and trigger confetti
+      try {
+        playSound();
+      } catch (error) {
+        console.log('Sound playback error:', error);
+      }
+      triggerTaskAddedConfetti();
+
       // Reset form
       setFormData({
         title: '',
@@ -62,16 +80,21 @@ const TaskForm = () => {
         dueDate: '',
         priority: 'Medium'
       });
+
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Add New Task</h2>
+    <form onSubmit={handleSubmit}>
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">Add New Task</h2>
 
       {/* Title */}
       <div className="mb-4">
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
           Task Title *
         </label>
         <input
@@ -80,7 +103,7 @@ const TaskForm = () => {
           name="title"
           value={formData.title}
           onChange={handleChange}
-          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 ${
+          className={`w-full px-4 py-3 md:py-2 text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
             errors.title ? 'border-red-500' : 'border-gray-300'
           }`}
           placeholder="Enter task title"
@@ -90,7 +113,7 @@ const TaskForm = () => {
 
       {/* Description */}
       <div className="mb-4">
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
           Description
         </label>
         <textarea
@@ -99,7 +122,7 @@ const TaskForm = () => {
           value={formData.description}
           onChange={handleChange}
           rows="3"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          className="w-full px-4 py-3 md:py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Enter task description (optional)"
         />
       </div>
@@ -107,7 +130,7 @@ const TaskForm = () => {
       {/* Due Date & Priority Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-          <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-2">
             Due Date *
           </label>
           <input
@@ -116,7 +139,7 @@ const TaskForm = () => {
             name="dueDate"
             value={formData.dueDate}
             onChange={handleChange}
-            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 ${
+            className={`w-full px-4 py-3 md:py-2 text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.dueDate ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -124,7 +147,7 @@ const TaskForm = () => {
         </div>
 
         <div>
-          <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-2">
             Priority
           </label>
           <select
@@ -132,7 +155,7 @@ const TaskForm = () => {
             name="priority"
             value={formData.priority}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            className="w-full px-4 py-3 md:py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="Low">Low</option>
             <option value="Medium">Medium</option>
@@ -144,7 +167,7 @@ const TaskForm = () => {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-3 md:py-2 px-4 rounded-lg transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed min-h-11 active:scale-[0.98]"
       >
         {isSubmitting ? 'Adding Task...' : 'Add Task'}
       </button>
