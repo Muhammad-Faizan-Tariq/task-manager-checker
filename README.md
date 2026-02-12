@@ -404,6 +404,4 @@ Built with ❤️ as part of a Full Stack Developer Assessment
 
 ---
 
-**Live Demo**: [Add your deployed URL here]
-
-**API Documentation**: [Add your Swagger docs URL here]
+**Live Demo**: [Live Vercel Deployed URL](https://task-manager-checker.vercel.app)
